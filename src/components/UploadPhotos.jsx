@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ref, uploadBytes } from "firebase/storage";
 import { storage } from "../firebase";
 
@@ -10,6 +10,10 @@ export default function UploadPhotos() {
   const handleFileChange = (e) => {
     setFiles([...e.target.files]);
   };
+
+  useEffect(() => {
+    console.log("Env project ID:", import.meta.env.VITE_PROJECTID);
+  }, [])
 
   const uploadPhotos = async () => {
     setUploading(true);
