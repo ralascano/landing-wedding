@@ -40,3 +40,16 @@
 .read-the-docs {
   color: #888;
 }
+
+
+@media (orientation: portrait) {
+  .UploadPhotos__container {
+    background-image: url('/background-portrait.jpg');
+  }
+}
+
+@media (orientation: landscape) {
+  .UploadPhotos__container {
+    background-image: url('/background-landscape.jpg');
+  }
+}
