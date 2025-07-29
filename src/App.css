@@ -1,13 +1,17 @@
+.great-vibes-regular {
+  font-family: 'Great Vibes';
+  font-weight: 400;
+  font-style: italic;
+}
+
 #root {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
 .logo {
   height: 6em;
-  padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
@@ -27,20 +31,47 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.container {
+  position: relative;
+  background: url(./assets/brkr.jpeg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  overflow: hidden;
 }
 
-.card {
-  padding: 2em;
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.5), rgba(80, 0, 80, 0.3));
+  z-index: 1;
+}
+
+.container > * {
+  position: relative;
+  z-index: 2; /* Asegura que el contenido esté sobre el overlay */
 }
 
 .read-the-docs {
   color: #888;
 }
 
+.card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
 
 @media (orientation: portrait) {
   .UploadPhotos__container {
