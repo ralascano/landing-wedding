@@ -4,6 +4,16 @@
   font-style: italic;
 }
 
+.style-form {
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 90%;
+  color: black;
+  margin-bottom: 6rem;
+  position: absolute;
+  background: transparent;
+}
+
 #root {
   width: 100%;
   margin: 0 auto;
@@ -31,6 +41,11 @@
   }
 }
 
+.body-container {
+  min-height: 100vh;
+  display: flex;
+}
+
 .container {
   position: relative;
   background: url(./assets/brkr.jpeg);
@@ -56,6 +71,13 @@
   z-index: 2; /* Asegura que el contenido esté sobre el overlay */
 }
 
+.container-image {
+  position: absolute;
+  bottom: 0;
+  left: 5em;
+  width: 60vh;
+}
+
 .read-the-docs {
   color: #888;
 }
@@ -67,6 +89,20 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
+.container-form {
+  flex-basis: 30%;
+  padding: 2rem;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
@@ -76,6 +112,26 @@
 @media (orientation: portrait) {
   .UploadPhotos__container {
     background-image: url('/background-portrait.jpg');
+  }
+  .body-container {
+    position: relative;
+    justify-content: center;
+  }
+  .container-form {
+    position: absolute;
+    width: 30vh;
+    height: 80vh;
+    opacity: 0.8;
+    z-index: 999;
+  }
+  .container {
+    flex-basis: 100% !important;
+  }
+
+  .container-image {
+    width: 30vh;
+    padding-bottom: 3vh;
+    width: 70%;
   }
 }
 

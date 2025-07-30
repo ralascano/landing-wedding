@@ -48,48 +48,25 @@ export default function UploadPhotos() {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="body-container">
       <div className="container" style={{ flexBasis: '70%' }}>
-        <img
-          style={{ position: 'absolute', bottom: '0', left: '5em', width: '60vh' }}
-          src={bryanerak}
-          alt="fuentes-manuscritas"
-          border="0"
-        />
+        <img className="container-image" src={bryanerak} alt="fuentes-manuscritas" border="0" />
       </div>
       <div
+        className="container-form"
         style={{
-          flexBasis: '30%',
-          padding: '2rem',
           backgroundImage: `url("${formbg}")`,
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
         }}
       >
         <div
-          className="great-vibes-regular"
+          className="great-vibes-regular style-form"
           style={{
-            borderRadius: '1rem',
-            padding: '2rem',
-            maxWidth: '90%',
-            color: 'black',
-            marginBottom: '6rem',
-            position: 'absolute',
             top: previewFiles.length > 0 ? '25%' : '37%',
-            background: 'transparent',
           }}
         >
           <h2>¡Gracias por acompañarnos en nuestra Boda! </h2>
           <p>Sube aquí tus mejores fotos 📸</p>
 
-          {/* NUEVO INPUT PARA EL NOMBRE/APODO */}
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="nombre" style={{ display: 'block', marginBottom: '0.5rem' }}>
               Agrega tu nombre o apodo para saber quién subió la foto:
@@ -171,10 +148,6 @@ export default function UploadPhotos() {
 }
 
 const styles = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-  },
   button: {
     marginTop: '1rem',
     padding: '0.5rem 1.2rem',
