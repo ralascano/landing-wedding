@@ -7,7 +7,7 @@ import bryanerak from '../assets/BryaneraK.png';
 import ModalPhotos from './ModalPhotos';
 import { Button, Spinner } from 'reactstrap';
 import ShowAlert from './ShowAlert';
-import { storage } from '../firebase';
+//import { storage } from '../firebase';
 
 function limpiarYTransformarNombre(nombre) {
   if (!nombre) return '';
@@ -31,7 +31,6 @@ export default function UploadPhotos() {
   const [uploading, setUploading] = useState(false);
   const [loader, setLoader] = useState(false);
   const [canUpload, setCanUpload] = useState(true);
-  const [messageUpload, setMessageUpload] = useState(false);
   const inputRef = useRef(null);
   const [nombre, setNombre] = useState('');
   const [showAlert, setShowAlert] = useState(false);
@@ -52,6 +51,7 @@ export default function UploadPhotos() {
       setAlertMsg('Máximo 15 fotos al mismo tiempo.');
       setAlertColor('warning');
       setShowAlert(true);
+      setLoader(false);
       return;
     }
 
@@ -156,7 +156,7 @@ export default function UploadPhotos() {
       <div className="container-form" style={{ backgroundImage: `url("${formbg}")` }}>
         <div
           className="great-vibes-regular style-form"
-          style={{ top: previewFiles.length > 0 ? '25%' : '37%' }}
+          style={{ top: previewFiles.length > 0 ? '25%' : '33%' }}
         >
           {showAlert && (
             <ShowAlert alertMsg={alertMsg} color={alertColor} setShowAlert={setShowAlert} />
@@ -197,23 +197,36 @@ export default function UploadPhotos() {
               }}
             >
               {!loader && previewFiles.length === 0 && (
-                <button
-                  onClick={handleClick}
-                  disabled={!canUpload}
+                <div
                   style={{
-                    minWidth: '140px',
-                    padding: '0.5rem 1.5rem',
-                    fontWeight: '600',
-                    cursor: canUpload ? 'pointer' : 'not-allowed',
-                    backgroundColor: canUpload ? '#1976d2' : '#aaa',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.3s ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}
                 >
-                  Subir Fotos
-                </button>
+                  <button
+                    onClick={handleClick}
+                    disabled={!canUpload}
+                    style={{
+                      minWidth: '140px',
+                      maxWidth: '150px',
+                      padding: '0.5rem 1.5rem',
+                      fontWeight: '600',
+                      cursor: canUpload ? 'pointer' : 'not-allowed',
+                      backgroundColor: canUpload ? '#1976d2' : '#aaa',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      transition: 'background-color 0.3s ease',
+                    }}
+                  >
+                    Subir Fotos
+                  </button>
+                  <span style={{ fontStyle: 'italic', fontSize: '12px', color: 'red' }}>
+                    *Máximo 15 fotos al mismo tiempo.
+                  </span>
+                </div>
               )}
 
               <input

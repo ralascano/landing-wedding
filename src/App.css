@@ -140,3 +140,14 @@
     background-image: url('/background-landscape.jpg');
   }
 }
+
+@media (min-width: 1400px) {
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container-xl,
+  .container-xxl {
+    max-width: 1350px !important;
+  }
+}
