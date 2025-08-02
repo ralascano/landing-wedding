@@ -7,7 +7,7 @@ import bryanerak from '../assets/BryaneraK.png';
 import ModalPhotos from './ModalPhotos';
 import { Button, Spinner } from 'reactstrap';
 import ShowAlert from './ShowAlert';
-//import { storage } from '../firebase';
+import { storage } from '../firebase';
 
 function limpiarYTransformarNombre(nombre) {
   if (!nombre) return '';
