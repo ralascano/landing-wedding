@@ -38,7 +38,7 @@ export default function UploadPhotos() {
   const [alertMsg, setAlertMsg] = useState('');
   const [alertColor, setAlertColor] = useState('');
 
-  const maxFiles = 10;
+  const maxFiles = 15;
 
   const handleNameChange = (e) => {
     setNombre(e.target.value);
@@ -49,10 +49,9 @@ export default function UploadPhotos() {
     const selectedFiles = Array.from(e.target.files);
 
     if (selectedFiles.length > maxFiles) {
-      setMessageUpload(true);
-      setTimeout(() => {
-        setMessageUpload(false);
-      }, 1500);
+      setAlertMsg('Máximo 15 fotos al mismo tiempo.');
+      setAlertColor('warning');
+      setShowAlert(true);
       return;
     }
 
@@ -117,7 +116,7 @@ export default function UploadPhotos() {
         await uploadBytes(storageRef, file);
       }
       setAlertMsg('✅ ¡Fotos subidas con éxito! Por favor espera 2 minutos antes de subir más.');
-      setAlertColor('');
+      setAlertColor('primary');
       setShowAlert(true);
       setPreviewFiles([]);
     } catch (error) {
@@ -184,7 +183,7 @@ export default function UploadPhotos() {
               value={nombre}
             />
           </div>
-          {messageUpload && `Máximo ${maxFiles} fotos.`}
+
           {loader && <Spinner>Loading...</Spinner>}
           {nombre && nombre.length > 0 && (
             <div
