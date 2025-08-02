@@ -7,7 +7,7 @@ import bryanerak from '../assets/BryaneraK.png';
 import ModalPhotos from './ModalPhotos';
 import { Button, Spinner } from 'reactstrap';
 import ShowAlert from './ShowAlert';
-import { storage } from '../firebase';
+//import { storage } from '../firebase';
 
 function limpiarYTransformarNombre(nombre) {
   if (!nombre) return '';
@@ -23,7 +23,10 @@ function limpiarYTransformarNombre(nombre) {
     )
     .join('');
 
-  return camelCase;
+  // Generar un identificador único con timestamp corto
+  const idUnico = Date.now().toString(36).slice(-6);
+
+  return `${camelCase}_${idUnico}`;
 }
 
 export default function UploadPhotos() {
