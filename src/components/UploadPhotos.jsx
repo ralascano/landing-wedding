@@ -6,6 +6,7 @@ import formbg from '../assets/backgroundformportrait.png';
 import bryanerak from '../assets/BryaneraK.png';
 import ModalPhotos from './ModalPhotos';
 import { Button, Spinner } from 'reactstrap';
+import ShowAlert from './ShowAlert';
 import { storage } from '../firebase';
 
 function limpiarYTransformarNombre(nombre) {
@@ -28,12 +29,14 @@ function limpiarYTransformarNombre(nombre) {
 export default function UploadPhotos() {
   const [previewFiles, setPreviewFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [loader, setLoader] = useState(false);
   const [canUpload, setCanUpload] = useState(true);
   const [messageUpload, setMessageUpload] = useState(false);
   const inputRef = useRef(null);
   const [nombre, setNombre] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMsg, setAlertMsg] = useState('');
+  const [alertColor, setAlertColor] = useState('');
 
   const maxFiles = 10;
 
@@ -73,11 +76,12 @@ export default function UploadPhotos() {
       }));
 
       setPreviewFiles(previews);
-      setSuccess(false);
       setLoader(false);
     } catch (error) {
       console.error('Error al comprimir imágenes:', error);
-      alert('Hubo un error al procesar las imágenes. Intenta con otras fotos.');
+      setAlertMsg('Error al subir las fotos. Intenta nuevamente.');
+      setAlertColor('danger');
+      setShowAlert(true);
     }
   };
 
@@ -88,14 +92,19 @@ export default function UploadPhotos() {
 
   const uploadPhotos = async () => {
     if (!canUpload) {
-      alert('Por favor espera un momento antes de subir nuevas fotos.');
+      setAlertMsg('Por favor espera un momento antes de subir nuevas fotos.');
+      setAlertColor('warning');
+      setShowAlert(true);
       return;
     }
 
     const nombreTransformado = limpiarYTransformarNombre(nombre);
 
     if (!nombreTransformado) {
-      alert('Por favor ingresa un nombre válido sin emojis ni caracteres especiales.');
+      alert();
+      setAlertMsg('Por favor ingresa un nombre válido sin emojis ni caracteres especiales.');
+      setAlertColor('warning');
+      setShowAlert(true);
       return;
     }
 
@@ -107,12 +116,15 @@ export default function UploadPhotos() {
         const storageRef = ref(storage, `boda/${nombreTransformado}/${Date.now()}-${file.name}`);
         await uploadBytes(storageRef, file);
       }
-
-      setSuccess(true);
+      setAlertMsg('✅ ¡Fotos subidas con éxito! Por favor espera 2 minutos antes de subir más.');
+      setAlertColor('');
+      setShowAlert(true);
       setPreviewFiles([]);
     } catch (error) {
       console.error('Error al subir imágenes:', error);
-      alert('Error al subir las fotos. Intenta nuevamente.');
+      setAlertMsg('Error al subir las fotos. Intenta nuevamente.');
+      setAlertColor('danger');
+      setShowAlert(true);
     } finally {
       setUploading(false);
       setTimeout(() => {
@@ -123,7 +135,9 @@ export default function UploadPhotos() {
 
   const handleClick = () => {
     if (!canUpload) {
-      alert('Por favor espera antes de subir nuevas fotos.');
+      setAlertMsg('Por favor espera antes de subir nuevas fotos.');
+      setAlertColor('warning');
+      setShowAlert(true);
       return;
     }
     inputRef.current.click();
@@ -145,6 +159,9 @@ export default function UploadPhotos() {
           className="great-vibes-regular style-form"
           style={{ top: previewFiles.length > 0 ? '25%' : '37%' }}
         >
+          {showAlert && (
+            <ShowAlert alertMsg={alertMsg} color={alertColor} setShowAlert={setShowAlert} />
+          )}
           <h2>¡Gracias por acompañarnos en nuestra Boda! </h2>
           <p>Sube aquí tus mejores fotos 📸</p>
 
@@ -237,20 +254,6 @@ export default function UploadPhotos() {
                 >
                   {uploading ? 'Subiendo...' : 'Subir Fotos'}
                 </button>
-              )}
-
-              {success && (
-                <p
-                  style={{
-                    color: 'green',
-                    fontWeight: '600',
-                    marginTop: '0.5rem',
-                    width: '100%',
-                    textAlign: 'center',
-                  }}
-                >
-                  ✅ ¡Fotos subidas con éxito! Por favor espera 2 minutos antes de subir más.
-                </p>
               )}
             </div>
           )}
