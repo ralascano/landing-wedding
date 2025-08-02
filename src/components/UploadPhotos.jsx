@@ -1,31 +1,84 @@
-import React, { useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { ref, uploadBytes } from 'firebase/storage';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+import imageCompression from 'browser-image-compression';
+
 import formbg from '../assets/backgroundformportrait.png';
 import bryanerak from '../assets/BryaneraK.png';
-import { storage } from '../firebase'; // Asegúrate de tener esta importación correcta
+import ModalPhotos from './ModalPhotos';
+import { Button, Spinner } from 'reactstrap';
+import { storage } from '../firebase';
+
+function limpiarYTransformarNombre(nombre) {
+  if (!nombre) return '';
+
+  const sinEmojis = nombre.replace(/[^À-ſ\p{L}\s]/gu, '');
+
+  const normalizado = sinEmojis.trim().replace(/\s+/g, ' ');
+
+  const palabras = normalizado.toLowerCase().split(' ');
+  const camelCase = palabras
+    .map((palabra, index) =>
+      index === 0 ? palabra : palabra.charAt(0).toUpperCase() + palabra.slice(1),
+    )
+    .join('');
+
+  return camelCase;
+}
 
 export default function UploadPhotos() {
-  const [previewFiles, setPreviewFiles] = useState([]); // [{ file, url }]
+  const [previewFiles, setPreviewFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
-
+  const [loader, setLoader] = useState(false);
+  const [canUpload, setCanUpload] = useState(true);
+  const [messageUpload, setMessageUpload] = useState(false);
+  const inputRef = useRef(null);
   const [nombre, setNombre] = useState('');
+
+  const maxFiles = 10;
 
   const handleNameChange = (e) => {
     setNombre(e.target.value);
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
+    setLoader(true);
     const selectedFiles = Array.from(e.target.files);
-    const previews = selectedFiles.map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
-    }));
-    setPreviewFiles(previews);
-    setSuccess(false);
+
+    if (selectedFiles.length > maxFiles) {
+      setMessageUpload(true);
+      setTimeout(() => {
+        setMessageUpload(false);
+      }, 1500);
+      return;
+    }
+
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1024,
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFilesPromises = selectedFiles.map(async (file) => {
+        const compressedFile = await imageCompression(file, options);
+        return compressedFile;
+      });
+
+      const compressedFiles = await Promise.all(compressedFilesPromises);
+
+      const previews = compressedFiles.map((file) => ({
+        file,
+        url: URL.createObjectURL(file),
+      }));
+
+      setPreviewFiles(previews);
+      setSuccess(false);
+      setLoader(false);
+    } catch (error) {
+      console.error('Error al comprimir imágenes:', error);
+      alert('Hubo un error al procesar las imágenes. Intenta con otras fotos.');
+    }
   };
 
   const handleRemove = (indexToRemove) => {
@@ -34,35 +87,63 @@ export default function UploadPhotos() {
   };
 
   const uploadPhotos = async () => {
-    setUploading(true);
-    const folderName = nombre;
-
-    for (const { file } of previewFiles) {
-      const storageRef = ref(storage, `boda/${folderName}/${Date.now()}-${file.name}`);
-      await uploadBytes(storageRef, file);
+    if (!canUpload) {
+      alert('Por favor espera un momento antes de subir nuevas fotos.');
+      return;
     }
 
-    setUploading(false);
-    setSuccess(true);
-    setPreviewFiles([]);
+    const nombreTransformado = limpiarYTransformarNombre(nombre);
+
+    if (!nombreTransformado) {
+      alert('Por favor ingresa un nombre válido sin emojis ni caracteres especiales.');
+      return;
+    }
+
+    setUploading(true);
+    setCanUpload(false);
+
+    try {
+      for (const { file } of previewFiles) {
+        const storageRef = ref(storage, `boda/${nombreTransformado}/${Date.now()}-${file.name}`);
+        await uploadBytes(storageRef, file);
+      }
+
+      setSuccess(true);
+      setPreviewFiles([]);
+    } catch (error) {
+      console.error('Error al subir imágenes:', error);
+      alert('Error al subir las fotos. Intenta nuevamente.');
+    } finally {
+      setUploading(false);
+      setTimeout(() => {
+        setCanUpload(true);
+      }, 120000);
+    }
   };
+
+  const handleClick = () => {
+    if (!canUpload) {
+      alert('Por favor espera antes de subir nuevas fotos.');
+      return;
+    }
+    inputRef.current.click();
+  };
+
+  useEffect(() => {
+    return () => {
+      previewFiles.forEach(({ url }) => URL.revokeObjectURL(url));
+    };
+  }, [previewFiles]);
 
   return (
     <div className="body-container">
       <div className="container" style={{ flexBasis: '70%' }}>
-        <img className="container-image" src={bryanerak} alt="fuentes-manuscritas" border="0" />
+        <img className="container-image" src={bryanerak} alt="fuentes-manuscritas" />
       </div>
-      <div
-        className="container-form"
-        style={{
-          backgroundImage: `url("${formbg}")`,
-        }}
-      >
+      <div className="container-form" style={{ backgroundImage: `url("${formbg}")` }}>
         <div
           className="great-vibes-regular style-form"
-          style={{
-            top: previewFiles.length > 0 ? '25%' : '37%',
-          }}
+          style={{ top: previewFiles.length > 0 ? '25%' : '37%' }}
         >
           <h2>¡Gracias por acompañarnos en nuestra Boda! </h2>
           <p>Sube aquí tus mejores fotos 📸</p>
@@ -82,95 +163,99 @@ export default function UploadPhotos() {
                 borderRadius: '0.5rem',
                 border: '1px solid #ccc',
               }}
-              onChange={handleNameChange} // Necesitas crear esta función
+              onChange={handleNameChange}
+              value={nombre}
             />
           </div>
-
+          {messageUpload && `Máximo ${maxFiles} fotos.`}
+          {loader && <Spinner>Loading...</Spinner>}
           {nombre && nombre.length > 0 && (
-            <>
-              <input type="file" accept="image/*" multiple onChange={handleFileChange} />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '1rem',
+                flexWrap: 'wrap',
+                marginTop: '1rem',
+                alignItems: 'center',
+              }}
+            >
+              {!loader && previewFiles.length === 0 && (
+                <button
+                  onClick={handleClick}
+                  disabled={!canUpload}
+                  style={{
+                    minWidth: '140px',
+                    padding: '0.5rem 1.5rem',
+                    fontWeight: '600',
+                    cursor: canUpload ? 'pointer' : 'not-allowed',
+                    backgroundColor: canUpload ? '#1976d2' : '#aaa',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.3s ease',
+                  }}
+                >
+                  Subir Fotos
+                </button>
+              )}
+
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                ref={inputRef}
+                style={{ display: 'none' }}
+                disabled={!canUpload}
+              />
+
               {previewFiles.length > 0 && (
-                <button onClick={uploadPhotos} disabled={uploading} style={styles.button}>
+                <ModalPhotos
+                  previewFiles={previewFiles}
+                  handleRemove={handleRemove}
+                  uploading={uploading}
+                  canUpload={canUpload}
+                />
+              )}
+
+              {previewFiles.length > 0 && (
+                <button
+                  onClick={uploadPhotos}
+                  disabled={uploading || !canUpload}
+                  style={{
+                    minWidth: '140px',
+                    padding: '0.5rem 1.5rem',
+                    fontWeight: '600',
+                    backgroundColor: '#42814C',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: uploading || !canUpload ? 'not-allowed' : 'pointer',
+                    transition: 'background-color 0.3s ease',
+                  }}
+                >
                   {uploading ? 'Subiendo...' : 'Subir Fotos'}
                 </button>
               )}
-              {success && <p style={styles.success}>✅ ¡Fotos subidas con éxito!</p>}
-              {previewFiles.length > 0 && (
-                <div>
-                  <Slider
-                    dots={true}
-                    infinite={true}
-                    speed={500}
-                    slidesToShow={1}
-                    slidesToScroll={1}
-                  >
-                    {previewFiles.map((img, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          position: 'relative',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          width: '30%',
-                        }}
-                      >
-                        <img src={img.url} alt={`Foto ${i + 1}`} height="250" />
-                        <button
-                          onClick={() => handleRemove(i)}
-                          style={{
-                            position: 'absolute',
-                            top: '10px',
-                            right: '10px',
-                            background: 'rgba(0,0,0,0.6)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '50%',
-                            width: '30px',
-                            height: '30px',
-                            cursor: 'pointer',
-                            zIndex: 10,
-                          }}
-                        >
-                          ❌
-                        </button>
-                      </div>
-                    ))}
-                  </Slider>
-                </div>
+
+              {success && (
+                <p
+                  style={{
+                    color: 'green',
+                    fontWeight: '600',
+                    marginTop: '0.5rem',
+                    width: '100%',
+                    textAlign: 'center',
+                  }}
+                >
+                  ✅ ¡Fotos subidas con éxito! Por favor espera 2 minutos antes de subir más.
+                </p>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  button: {
-    marginTop: '1rem',
-    padding: '0.5rem 1.2rem',
-    fontSize: '1rem',
-    backgroundColor: '#b28d6c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-  },
-  removeBtn: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    background: 'rgba(0,0,0,0.5)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '50%',
-    cursor: 'pointer',
-  },
-  success: {
-    marginTop: '1rem',
-    color: 'green',
-    fontWeight: 'bold',
-  },
-};

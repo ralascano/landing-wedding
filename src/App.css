@@ -119,8 +119,8 @@
   }
   .container-form {
     position: absolute;
-    width: 30vh;
-    height: 80vh;
+    width: 36vh;
+    height: 90vh;
     opacity: 0.8;
     z-index: 999;
   }
