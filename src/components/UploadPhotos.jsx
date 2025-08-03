@@ -40,7 +40,7 @@ export default function UploadPhotos() {
   const [alertMsg, setAlertMsg] = useState('');
   const [alertColor, setAlertColor] = useState('');
 
-  const maxFiles = 15;
+  const maxFiles = 50;
 
   const handleNameChange = (e) => {
     setNombre(e.target.value);
@@ -51,7 +51,7 @@ export default function UploadPhotos() {
     const selectedFiles = Array.from(e.target.files);
 
     if (selectedFiles.length > maxFiles) {
-      setAlertMsg('Máximo 15 fotos al mismo tiempo.');
+      setAlertMsg('Máximo 50 fotos al mismo tiempo.');
       setAlertColor('warning');
       setShowAlert(true);
       setLoader(false);
@@ -226,9 +226,6 @@ export default function UploadPhotos() {
                   >
                     Subir Fotos
                   </button>
-                  <span style={{ fontStyle: 'italic', fontSize: '12px', color: 'red' }}>
-                    *Máximo 15 fotos al mismo tiempo.
-                  </span>
                 </div>
               )}
 
