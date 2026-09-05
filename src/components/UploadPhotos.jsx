@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { ref, uploadBytes } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 
-import backgroundOscarVerito from '../assets/backgroundOscarVerito.png';
+import backgroundOscarVerito from '../assets/backgroundOscarVerito.jpg';
 import ModalPhotos from './ModalPhotos';
 import { Spinner } from 'reactstrap';
 import ShowAlert from './ShowAlert';
