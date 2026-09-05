@@ -3,6 +3,7 @@ import { ref, uploadBytes } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 
 import backgroundOscarVerito from '../assets/backgroundOscarVerito.png';
+import backgroundOscarVeritoMobile from '../assets/backgroundOscarVeritoMobile.png';
 import ModalPhotos from './ModalPhotos';
 import { Spinner } from 'reactstrap';
 import ShowAlert from './ShowAlert';
@@ -39,6 +40,22 @@ export default function UploadPhotos() {
   const [alertColor, setAlertColor] = useState('');
 
   const maxFiles = 50;
+
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+
+    const handleChange = (e) => {
+      setIsMobile(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
 
   const handleNameChange = (e) => {
     setNombre(e.target.value);
@@ -113,7 +130,7 @@ export default function UploadPhotos() {
     setCanUpload(false);
 
     try {
-      // FIREBASE TEMPORALMENTE DESACTIVADO
+      //FIREBASE TEMPORALMENTE DESACTIVADO
 
       for (const { file } of previewFiles) {
         const storageRef = ref(storage, `boda/${nombreTransformado}/${Date.now()}-${file.name}`);
@@ -159,11 +176,11 @@ export default function UploadPhotos() {
   return (
     <div
       style={{
-        width: '100vw',
-        height: '100vh',
-        minHeight: '700px',
+        width: '100%',
+        minHeight: '100svh',
 
-        backgroundImage: `url("${backgroundOscarVerito}")`,
+        backgroundImage: `url("${isMobile ? backgroundOscarVeritoMobile : backgroundOscarVerito}")`,
+
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
@@ -172,38 +189,53 @@ export default function UploadPhotos() {
         overflow: 'hidden',
       }}
     >
-      {/* =========================================================
-          FORMULARIO SUPERPUESTO SOBRE LA ZONA DERECHA DEL BACKGROUND
-          ========================================================= */}
+      {/* FORMULARIO */}
       <div
         style={{
           position: 'absolute',
 
-          // La zona blanca comienza aproximadamente al 65%
-          left: '68%',
-          width: '29%',
+          ...(isMobile
+            ? {
+                /*
+                 * MOBILE
+                 * La fotografía ocupa aproximadamente
+                 * la mitad superior del nuevo background.
+                 * El formulario queda en la zona crema.
+                 */
+                top: previewFiles.length > 0 ? '74%' : '76%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
 
-          // Posición vertical del formulario
-          top: previewFiles.length > 0 ? '58%' : '60%',
-          transform: 'translateY(-50%)',
+                width: '82%',
+                maxWidth: '420px',
+              }
+            : {
+                /*
+                 * DESKTOP
+                 * Formulario sobre el panel derecho.
+                 */
+                top: previewFiles.length > 0 ? '58%' : '60%',
+                left: '66%',
+                transform: 'translateY(-50%)',
+
+                width: '29%',
+                maxWidth: '550px',
+              }),
 
           zIndex: 10,
           textAlign: 'center',
-
           fontFamily: 'Georgia, serif',
           color: '#3f4433',
+          boxSizing: 'border-box',
         }}
       >
         {showAlert && (
           <ShowAlert alertMsg={alertMsg} color={alertColor} setShowAlert={setShowAlert} />
         )}
 
-        {/* Ya NO ponemos el título porque está dibujado
-            directamente en el nuevo background */}
-
         <div
           style={{
-            marginBottom: '1.2rem',
+            marginBottom: isMobile ? '0.8rem' : '1.2rem',
           }}
         >
           <label
@@ -211,8 +243,10 @@ export default function UploadPhotos() {
             style={{
               display: 'block',
               marginBottom: '0.7rem',
-              fontSize: '16px',
+
+              fontSize: isMobile ? '14px' : '16px',
               lineHeight: '1.4',
+
               color: '#4b4b3b',
             }}
           >
@@ -230,15 +264,15 @@ export default function UploadPhotos() {
               width: '100%',
               boxSizing: 'border-box',
 
-              padding: '12px 16px',
+              padding: isMobile ? '11px 14px' : '12px 16px',
 
               borderRadius: '10px',
               border: '1px solid rgba(154, 119, 52, 0.45)',
 
-              backgroundColor: 'rgba(255, 255, 255, 0.75)',
+              backgroundColor: 'rgba(255, 255, 255, 0.82)',
 
               color: '#3f4433',
-              fontSize: '15px',
+              fontSize: isMobile ? '16px' : '15px',
 
               outline: 'none',
 
@@ -261,11 +295,21 @@ export default function UploadPhotos() {
           <div
             style={{
               display: 'flex',
+
+              // En móvil los elementos se acomodan
+              // verticalmente.
+              flexDirection: isMobile ? 'column' : 'row',
+
               justifyContent: 'center',
-              gap: '1rem',
-              flexWrap: 'wrap',
-              marginTop: '1rem',
               alignItems: 'center',
+
+              gap: isMobile ? '0.7rem' : '1rem',
+
+              flexWrap: 'wrap',
+
+              marginTop: isMobile ? '0.7rem' : '1rem',
+
+              width: '100%',
             }}
           >
             {!loader && previewFiles.length === 0 && (
@@ -273,7 +317,12 @@ export default function UploadPhotos() {
                 onClick={handleClick}
                 disabled={!canUpload}
                 style={{
-                  minWidth: '160px',
+                  width: isMobile ? '100%' : 'auto',
+
+                  minWidth: isMobile ? 'unset' : '160px',
+
+                  maxWidth: isMobile ? '320px' : 'none',
+
                   padding: '11px 24px',
 
                   fontSize: '15px',
@@ -312,12 +361,21 @@ export default function UploadPhotos() {
             />
 
             {previewFiles.length > 0 && (
-              <ModalPhotos
-                previewFiles={previewFiles}
-                handleRemove={handleRemove}
-                uploading={uploading}
-                canUpload={canUpload}
-              />
+              <div
+                style={{
+                  width: isMobile ? '100%' : 'auto',
+
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
+              >
+                <ModalPhotos
+                  previewFiles={previewFiles}
+                  handleRemove={handleRemove}
+                  uploading={uploading}
+                  canUpload={canUpload}
+                />
+              </div>
             )}
 
             {previewFiles.length > 0 && (
@@ -325,7 +383,12 @@ export default function UploadPhotos() {
                 onClick={uploadPhotos}
                 disabled={uploading || !canUpload}
                 style={{
-                  minWidth: '160px',
+                  width: isMobile ? '100%' : 'auto',
+
+                  maxWidth: isMobile ? '320px' : 'none',
+
+                  minWidth: isMobile ? 'unset' : '160px',
+
                   padding: '11px 24px',
 
                   fontSize: '15px',
