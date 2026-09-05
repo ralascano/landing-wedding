@@ -3,7 +3,6 @@ import { ref, uploadBytes } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 
 import backgroundOscarVerito from '../assets/backgroundOscarVerito.png';
-import backgroundOscarVeritoMobile from '../assets/backgroundOscarVeritoMobile.png';
 import ModalPhotos from './ModalPhotos';
 import { Spinner } from 'reactstrap';
 import ShowAlert from './ShowAlert';
@@ -38,6 +37,8 @@ export default function UploadPhotos() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
   const [alertColor, setAlertColor] = useState('');
+
+  const [formActivo, setFormActivo] = useState(false);
 
   const maxFiles = 50;
 
@@ -176,11 +177,11 @@ export default function UploadPhotos() {
   return (
     <div
       style={{
-        width: '100%',
+        width: '100vw',
+        height: '100svh',
         minHeight: '100svh',
 
-        backgroundImage: `url("${isMobile ? backgroundOscarVeritoMobile : backgroundOscarVerito}")`,
-
+        backgroundImage: `url("${backgroundOscarVerito}")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
@@ -189,157 +190,280 @@ export default function UploadPhotos() {
         overflow: 'hidden',
       }}
     >
-      {/* FORMULARIO */}
+      {/* =====================================================
+          OVERLAY
+          Solo aparece cuando el usuario activa el formulario
+         ===================================================== */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+
+          backgroundColor: formActivo ? 'rgba(20, 24, 12, 0.30)' : 'rgba(20, 24, 12, 0)',
+
+          backdropFilter: formActivo ? 'blur(2px)' : 'blur(0px)',
+
+          WebkitBackdropFilter: formActivo ? 'blur(2px)' : 'blur(0px)',
+
+          transition: 'background-color 0.45s ease, backdrop-filter 0.45s ease',
+
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* =====================================================
+          FORMULARIO
+          PASO 1 -> pequeño y abajo
+          PASO 2 -> card completo y centrado
+         ===================================================== */}
       <div
         style={{
           position: 'absolute',
 
-          ...(isMobile
-            ? {
-                /*
-                 * MOBILE
-                 * La fotografía ocupa aproximadamente
-                 * la mitad superior del nuevo background.
-                 * El formulario queda en la zona crema.
-                 */
-                top: previewFiles.length > 0 ? '74%' : '76%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
+          left: '50%',
 
-                width: '82%',
-                maxWidth: '420px',
-              }
-            : {
-                /*
-                 * DESKTOP
-                 * Formulario sobre el panel derecho.
-                 */
-                top: previewFiles.length > 0 ? '58%' : '60%',
-                left: '66%',
-                transform: 'translateY(-50%)',
+          top: formActivo ? '50%' : isMobile ? '82%' : '84%',
 
-                width: '29%',
-                maxWidth: '550px',
-              }),
+          transform: 'translate(-50%, -50%)',
+
+          width: formActivo ? (isMobile ? '88%' : '390px') : isMobile ? '86%' : '350px',
+
+          maxWidth: isMobile ? '420px' : '390px',
+
+          padding: formActivo
+            ? isMobile
+              ? '22px 18px 20px'
+              : '28px 28px 24px'
+            : isMobile
+              ? '14px 16px'
+              : '15px 18px',
+
+          boxSizing: 'border-box',
+
+          background: formActivo
+            ? 'linear-gradient(145deg, rgba(255,253,247,0.91) 0%, rgba(247,240,221,0.86) 100%)'
+            : 'rgba(255,253,247,0.82)',
+
+          backdropFilter: formActivo ? 'blur(12px)' : 'blur(7px)',
+
+          WebkitBackdropFilter: formActivo ? 'blur(12px)' : 'blur(7px)',
+
+          border: '1px solid rgba(190,148,67,0.65)',
+
+          borderRadius: formActivo ? '20px' : '14px',
+
+          boxShadow: formActivo
+            ? '0 18px 50px rgba(15,18,8,0.38)'
+            : '0 8px 25px rgba(15,18,8,0.24)',
+
+          textAlign: 'center',
+
+          fontFamily: 'Georgia, serif',
+          color: '#44492f',
+
+          transition:
+            'top 0.45s ease, width 0.45s ease, padding 0.45s ease, background 0.45s ease, border-radius 0.45s ease, box-shadow 0.45s ease',
 
           zIndex: 10,
-          textAlign: 'center',
-          fontFamily: 'Georgia, serif',
-          color: '#3f4433',
-          boxSizing: 'border-box',
         }}
       >
-        {showAlert && (
-          <ShowAlert alertMsg={alertMsg} color={alertColor} setShowAlert={setShowAlert} />
+        {/* =====================================================
+            CONTENIDO QUE SOLO APARECE CUANDO SE ACTIVA
+           ===================================================== */}
+        {formActivo && (
+          <>
+            <div
+              style={{
+                width: '42px',
+                height: '2px',
+
+                margin: '0 auto 14px',
+
+                background: 'linear-gradient(90deg, transparent, #b58b3b, transparent)',
+              }}
+            />
+
+            <h2
+              style={{
+                margin: '0 0 6px',
+
+                fontFamily: 'Georgia, serif',
+
+                fontSize: isMobile ? '21px' : '26px',
+
+                fontWeight: '400',
+
+                lineHeight: '1.2',
+
+                color: '#8d692b',
+              }}
+            >
+              Comparte tus recuerdos
+            </h2>
+
+            <p
+              style={{
+                margin: '0 0 20px',
+
+                fontFamily: 'Georgia, serif',
+
+                fontSize: isMobile ? '13px' : '14px',
+
+                lineHeight: '1.4',
+
+                color: '#606347',
+              }}
+            >
+              Sube aquí tus mejores fotos 📸
+            </p>
+          </>
         )}
 
-        <div
-          style={{
-            marginBottom: isMobile ? '0.8rem' : '1.2rem',
-          }}
-        >
-          <label
-            htmlFor="nombre"
+        {/* =====================================================
+            ALERTAS
+           ===================================================== */}
+        {showAlert && (
+          <div
             style={{
-              display: 'block',
-              marginBottom: '0.7rem',
-
-              fontSize: isMobile ? '14px' : '16px',
-              lineHeight: '1.4',
-
-              color: '#4b4b3b',
+              marginBottom: '15px',
             }}
           >
-            Agrega tu nombre o apodo para saber quién subió la foto:
-          </label>
+            <ShowAlert alertMsg={alertMsg} color={alertColor} setShowAlert={setShowAlert} />
+          </div>
+        )}
+
+        {/* =====================================================
+            INPUT NOMBRE
+           ===================================================== */}
+        <div
+          style={{
+            marginBottom: formActivo && nombre ? '18px' : '0',
+
+            textAlign: 'left',
+          }}
+        >
+          {formActivo && (
+            <label
+              htmlFor="nombre"
+              style={{
+                display: 'block',
+
+                marginBottom: '7px',
+
+                fontFamily: 'Georgia, serif',
+
+                fontSize: isMobile ? '13px' : '14px',
+
+                lineHeight: '1.4',
+
+                color: '#4c5137',
+              }}
+            >
+              Tu nombre o apodo
+            </label>
+          )}
 
           <input
             type="text"
             id="nombre"
             name="nombre"
-            placeholder="Tu nombre o apodo"
+            placeholder={formActivo ? 'Ej. Ricardo' : 'Ingresa tu nombre o apodo'}
+            onFocus={() => setFormActivo(true)}
             onChange={handleNameChange}
             value={nombre}
             style={{
               width: '100%',
+
               boxSizing: 'border-box',
 
-              padding: isMobile ? '11px 14px' : '12px 16px',
+              padding: formActivo ? (isMobile ? '12px 14px' : '13px 15px') : '11px 14px',
+
+              backgroundColor: 'rgba(255,255,255,0.90)',
+
+              border: '1px solid rgba(167,133,66,0.55)',
 
               borderRadius: '10px',
-              border: '1px solid rgba(154, 119, 52, 0.45)',
-
-              backgroundColor: 'rgba(255, 255, 255, 0.82)',
-
-              color: '#3f4433',
-              fontSize: isMobile ? '16px' : '15px',
 
               outline: 'none',
 
-              boxShadow: '0 3px 12px rgba(0, 0, 0, 0.05)',
+              fontFamily: 'Georgia, serif',
+
+              fontSize: isMobile ? '16px' : '15px',
+
+              color: '#3f432e',
+
+              boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.04)',
+
+              transition: 'all 0.3s ease',
             }}
           />
         </div>
 
+        {/* =====================================================
+            LOADER
+           ===================================================== */}
         {loader && (
           <div
             style={{
-              margin: '15px 0',
+              margin: '16px 0',
             }}
           >
             <Spinner>Loading...</Spinner>
           </div>
         )}
 
-        {nombre && nombre.length > 0 && (
+        {/* =====================================================
+            OPCIONES DE FOTOS
+            Aparecen solamente cuando ya escribió el nombre
+           ===================================================== */}
+        {formActivo && nombre.trim().length > 0 && (
           <div
             style={{
               display: 'flex',
 
-              // En móvil los elementos se acomodan
-              // verticalmente.
-              flexDirection: isMobile ? 'column' : 'row',
+              flexDirection: 'column',
 
               justifyContent: 'center',
               alignItems: 'center',
 
-              gap: isMobile ? '0.7rem' : '1rem',
-
-              flexWrap: 'wrap',
-
-              marginTop: isMobile ? '0.7rem' : '1rem',
-
               width: '100%',
+
+              gap: '12px',
             }}
           >
+            {/* BOTÓN SELECCIONAR FOTOS */}
             {!loader && previewFiles.length === 0 && (
               <button
+                type="button"
                 onClick={handleClick}
                 disabled={!canUpload}
                 style={{
-                  width: isMobile ? '100%' : 'auto',
+                  width: '100%',
 
-                  minWidth: isMobile ? 'unset' : '160px',
+                  padding: isMobile ? '12px 18px' : '12px 20px',
 
-                  maxWidth: isMobile ? '320px' : 'none',
-
-                  padding: '11px 24px',
-
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  letterSpacing: '0.5px',
-
-                  cursor: canUpload ? 'pointer' : 'not-allowed',
-
-                  backgroundColor: canUpload ? '#60643d' : '#aaa',
+                  background: canUpload
+                    ? 'linear-gradient(135deg, #697047 0%, #4d5432 100%)'
+                    : '#aaa',
 
                   color: '#fff',
 
-                  border: canUpload ? '1px solid #a98542' : '1px solid #aaa',
+                  border: canUpload ? '1px solid #b69149' : '1px solid #aaa',
 
-                  borderRadius: '8px',
+                  borderRadius: '10px',
 
-                  boxShadow: canUpload ? '0 4px 12px rgba(60, 65, 40, 0.20)' : 'none',
+                  fontFamily: 'Georgia, serif',
+
+                  fontSize: '14px',
+
+                  fontWeight: '600',
+
+                  letterSpacing: '0.4px',
+
+                  cursor: canUpload ? 'pointer' : 'not-allowed',
+
+                  boxShadow: canUpload ? '0 7px 18px rgba(48,54,30,0.22)' : 'none',
 
                   transition: 'all 0.3s ease',
                 }}
@@ -348,6 +472,7 @@ export default function UploadPhotos() {
               </button>
             )}
 
+            {/* INPUT FILE OCULTO */}
             <input
               type="file"
               accept="image/*"
@@ -360,13 +485,18 @@ export default function UploadPhotos() {
               disabled={!canUpload}
             />
 
+            {/* =================================================
+                PREVIEW
+               ================================================= */}
             {previewFiles.length > 0 && (
               <div
                 style={{
-                  width: isMobile ? '100%' : 'auto',
+                  width: '100%',
 
                   display: 'flex',
+
                   justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
                 <ModalPhotos
@@ -378,34 +508,41 @@ export default function UploadPhotos() {
               </div>
             )}
 
+            {/* =================================================
+                BOTÓN SUBIR
+               ================================================= */}
             {previewFiles.length > 0 && (
               <button
+                type="button"
                 onClick={uploadPhotos}
                 disabled={uploading || !canUpload}
                 style={{
-                  width: isMobile ? '100%' : 'auto',
+                  width: '100%',
 
-                  maxWidth: isMobile ? '320px' : 'none',
+                  padding: isMobile ? '12px 18px' : '12px 20px',
 
-                  minWidth: isMobile ? 'unset' : '160px',
-
-                  padding: '11px 24px',
-
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  letterSpacing: '0.5px',
-
-                  backgroundColor: uploading || !canUpload ? '#aaa' : '#60643d',
+                  background:
+                    uploading || !canUpload
+                      ? '#aaa'
+                      : 'linear-gradient(135deg, #697047 0%, #4d5432 100%)',
 
                   color: '#fff',
 
-                  border: uploading || !canUpload ? '1px solid #aaa' : '1px solid #a98542',
+                  border: uploading || !canUpload ? '1px solid #aaa' : '1px solid #b69149',
 
-                  borderRadius: '8px',
+                  borderRadius: '10px',
+
+                  fontFamily: 'Georgia, serif',
+
+                  fontSize: '14px',
+
+                  fontWeight: '600',
+
+                  letterSpacing: '0.4px',
 
                   cursor: uploading || !canUpload ? 'not-allowed' : 'pointer',
 
-                  boxShadow: uploading || !canUpload ? 'none' : '0 4px 12px rgba(60, 65, 40, 0.20)',
+                  boxShadow: uploading || !canUpload ? 'none' : '0 7px 18px rgba(48,54,30,0.22)',
 
                   transition: 'all 0.3s ease',
                 }}
@@ -413,6 +550,54 @@ export default function UploadPhotos() {
                 {uploading ? 'Subiendo...' : 'Subir Fotos'}
               </button>
             )}
+          </div>
+        )}
+
+        {/* =====================================================
+            DETALLE DORADO INFERIOR
+            Solo cuando el formulario está activo
+           ===================================================== */}
+        {formActivo && (
+          <div
+            style={{
+              display: 'flex',
+
+              justifyContent: 'center',
+              alignItems: 'center',
+
+              gap: '8px',
+
+              marginTop: nombre.trim().length > 0 ? '18px' : '16px',
+
+              opacity: 0.75,
+            }}
+          >
+            <div
+              style={{
+                width: '30px',
+                height: '1px',
+
+                backgroundColor: '#ad873e',
+              }}
+            />
+
+            <span
+              style={{
+                color: '#9a752f',
+                fontSize: '16px',
+              }}
+            >
+              ♡
+            </span>
+
+            <div
+              style={{
+                width: '30px',
+                height: '1px',
+
+                backgroundColor: '#ad873e',
+              }}
+            />
           </div>
         )}
       </div>
