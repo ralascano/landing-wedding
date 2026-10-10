@@ -1,10 +1,12 @@
+import { formatText } from '../config/format-text';
 import React, { useState } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-const ModalPhotos = ({ previewFiles, handleRemove, uploading, canUpload }) => {
+const ModalPhotos = ({ config, previewFiles, handleRemove, uploading, canUpload }) => {
+  const texts = config.texts.preview;
   const [modal, setModal] = useState(false);
 
   const toggle = () => setModal(!modal);
@@ -16,8 +18,9 @@ const ModalPhotos = ({ previewFiles, handleRemove, uploading, canUpload }) => {
           minWidth: '140px',
           padding: '0.5rem 1.5rem',
           fontWeight: '600',
-          backgroundColor: uploading || !canUpload ? '#aaa' : '#1976d2',
-          color: 'white',
+          backgroundColor:
+            uploading || !canUpload ? 'var(--event-disabled)' : 'var(--event-preview-button)',
+          color: 'var(--event-preview-text)',
           border: 'none',
           borderRadius: '4px',
           cursor: uploading || !canUpload ? 'not-allowed' : 'pointer',
@@ -25,17 +28,25 @@ const ModalPhotos = ({ previewFiles, handleRemove, uploading, canUpload }) => {
         }}
         onClick={toggle}
       >
-        Ver fotos (#{previewFiles.length})
+        {formatText(texts.open, { count: previewFiles.length })}
       </Button>
 
       <Modal isOpen={modal} toggle={toggle} className="modal-xl-custom">
-        <ModalHeader toggle={toggle}>
-          Fotos seleccionadas
-          <p style={{ fontSize: '0.9rem', marginBottom: '1rem', color: '#555' }}>
-            Puedes eliminar una foto presionando la <strong>X</strong> en la esquina superior.
+        <ModalHeader toggle={toggle} closeAriaLabel={texts.close}>
+          {texts.title}
+          <p
+            style={{
+              fontSize: '0.9rem',
+              marginBottom: '1rem',
+              color: 'var(--event-preview-muted)',
+            }}
+          >
+            {texts.instructionBefore}
+            <strong>{texts.removeSymbol}</strong>
+            {texts.instructionAfter}
           </p>
         </ModalHeader>
-        <ModalBody style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+        <ModalBody style={{ maxHeight: config.gallery.modalMaxHeight, overflowY: 'auto' }}>
           <div
             style={{
               display: 'flex',
@@ -49,16 +60,16 @@ const ModalPhotos = ({ previewFiles, handleRemove, uploading, canUpload }) => {
                 key={i}
                 style={{
                   position: 'relative',
-                  width: '150px',
-                  height: '150px',
+                  width: config.gallery.thumbnailSize,
+                  height: config.gallery.thumbnailSize,
                   borderRadius: '0.5rem',
                   overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  boxShadow: 'var(--event-preview-shadow)',
                 }}
               >
                 <img
                   src={img.url}
-                  alt={`Foto ${i + 1}`}
+                  alt={formatText(texts.imageAlt, { number: i + 1 })}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -72,7 +83,7 @@ const ModalPhotos = ({ previewFiles, handleRemove, uploading, canUpload }) => {
                     top: '4px',
                     right: '8px',
                     background: 'transparent',
-                    color: 'red',
+                    color: 'var(--event-preview-remove)',
                     border: 'none',
                     fontSize: '32px',
                     fontWeight: 'bold',
@@ -81,9 +92,9 @@ const ModalPhotos = ({ previewFiles, handleRemove, uploading, canUpload }) => {
                     zIndex: 10,
                     padding: 0,
                   }}
-                  aria-label="Eliminar foto"
+                  aria-label={texts.removeLabel}
                 >
-                  ×
+                  {texts.removeButton}
                 </button>
               </div>
             ))}
@@ -91,10 +102,10 @@ const ModalPhotos = ({ previewFiles, handleRemove, uploading, canUpload }) => {
         </ModalBody>
         <ModalFooter>
           <Button color="primary" onClick={toggle}>
-            Aceptar
+            {texts.confirm}
           </Button>{' '}
           <Button color="secondary" onClick={toggle}>
-            Cancelar
+            {texts.cancel}
           </Button>
         </ModalFooter>
       </Modal>

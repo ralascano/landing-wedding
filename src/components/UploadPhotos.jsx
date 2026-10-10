@@ -2,11 +2,12 @@ import React, { useRef, useState, useEffect } from 'react';
 import { ref, uploadBytes } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 
-import backgroundOscarVerito from '../assets/backgroundOscarVerito.jpg';
+import { formatText } from '../config/format-text';
 import ModalPhotos from './ModalPhotos';
+import PhotoHero from '../templates/PhotoHero';
 import { Spinner } from 'reactstrap';
 import ShowAlert from './ShowAlert';
-import { storage } from '../firebase';
+//import { storage } from '../firebase';
 
 function limpiarYTransformarNombre(nombre) {
   if (!nombre) return '';
@@ -26,7 +27,8 @@ function limpiarYTransformarNombre(nombre) {
   return `${camelCase}_${idUnico}`;
 }
 
-export default function UploadPhotos() {
+export default function UploadPhotos({ config, technicalConfig }) {
+  const { texts, upload, sections } = config;
   const [previewFiles, setPreviewFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [loader, setLoader] = useState(false);
@@ -40,12 +42,14 @@ export default function UploadPhotos() {
 
   const [formActivo, setFormActivo] = useState(false);
 
-  const maxFiles = 50;
+  const maxFiles = upload.maxFiles;
 
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia(`(max-width: ${technicalConfig.mobileBreakpointPx}px)`).matches,
+  );
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const mediaQuery = window.matchMedia(`(max-width: ${technicalConfig.mobileBreakpointPx}px)`);
 
     const handleChange = (e) => {
       setIsMobile(e.matches);
@@ -56,7 +60,7 @@ export default function UploadPhotos() {
     return () => {
       mediaQuery.removeEventListener('change', handleChange);
     };
-  }, []);
+  }, [technicalConfig.mobileBreakpointPx]);
 
   const handleNameChange = (e) => {
     setNombre(e.target.value);
@@ -68,7 +72,7 @@ export default function UploadPhotos() {
     const selectedFiles = Array.from(e.target.files);
 
     if (selectedFiles.length > maxFiles) {
-      setAlertMsg('Máximo 50 fotos al mismo tiempo.');
+      setAlertMsg(formatText(texts.messages.tooManyFiles, { maxFiles }));
       setAlertColor('warning');
       setShowAlert(true);
       setLoader(false);
@@ -76,9 +80,9 @@ export default function UploadPhotos() {
     }
 
     const options = {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1024,
-      useWebWorker: true,
+      maxSizeMB: upload.compression.maxSizeMB,
+      maxWidthOrHeight: upload.compression.maxWidthOrHeight,
+      useWebWorker: technicalConfig.useWebWorker,
     };
 
     try {
@@ -98,7 +102,7 @@ export default function UploadPhotos() {
       setLoader(false);
     } catch (error) {
       console.error('Error al comprimir imágenes:', error);
-      setAlertMsg('Error al subir las fotos. Intenta nuevamente.');
+      setAlertMsg(texts.messages.uploadError);
       setAlertColor('danger');
       setShowAlert(true);
       setLoader(false);
@@ -112,7 +116,7 @@ export default function UploadPhotos() {
 
   const uploadPhotos = async () => {
     if (!canUpload) {
-      setAlertMsg('Por favor espera un momento antes de subir nuevas fotos.');
+      setAlertMsg(texts.messages.uploadWait);
       setAlertColor('warning');
       setShowAlert(true);
       return;
@@ -121,7 +125,7 @@ export default function UploadPhotos() {
     const nombreTransformado = limpiarYTransformarNombre(nombre);
 
     if (!nombreTransformado) {
-      setAlertMsg('Por favor ingresa un nombre válido sin emojis ni caracteres especiales.');
+      setAlertMsg(texts.messages.invalidName);
       setAlertColor('warning');
       setShowAlert(true);
       return;
@@ -133,19 +137,22 @@ export default function UploadPhotos() {
     try {
       //FIREBASE TEMPORALMENTE DESACTIVADO
 
-      for (const { file } of previewFiles) {
-        const storageRef = ref(storage, `boda/${nombreTransformado}/${Date.now()}-${file.name}`);
+      /*for (const { file } of previewFiles) {
+        const storageRef = ref(
+          storage,
+          `${technicalConfig.storagePrefix}/${nombreTransformado}/${Date.now()}-${file.name}`,
+        );
 
         await uploadBytes(storageRef, file);
-      }
+      }*/
 
-      setAlertMsg('✅ ¡Fotos subidas con éxito! Por favor espera 2 minutos antes de subir más.');
+      setAlertMsg(formatText(texts.messages.success, { minutes: upload.cooldownMs / 60000 }));
       setAlertColor('primary');
       setShowAlert(true);
       setPreviewFiles([]);
     } catch (error) {
       console.error('Error al subir imágenes:', error);
-      setAlertMsg('Error al subir las fotos. Intenta nuevamente.');
+      setAlertMsg(texts.messages.uploadError);
       setAlertColor('danger');
       setShowAlert(true);
     } finally {
@@ -153,13 +160,13 @@ export default function UploadPhotos() {
 
       setTimeout(() => {
         setCanUpload(true);
-      }, 120000);
+      }, upload.cooldownMs);
     }
   };
 
   const handleClick = () => {
     if (!canUpload) {
-      setAlertMsg('Por favor espera antes de subir nuevas fotos.');
+      setAlertMsg(texts.messages.selectWait);
       setAlertColor('warning');
       setShowAlert(true);
       return;
@@ -175,95 +182,39 @@ export default function UploadPhotos() {
   }, [previewFiles]);
 
   return (
-    <div
-      style={{
-        width: '100vw',
-        height: '100svh',
-        minHeight: '100svh',
-
-        backgroundImage: `url("${backgroundOscarVerito}")`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center center',
-        backgroundRepeat: 'no-repeat',
-
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      {/* =====================================================
-          OVERLAY
-          Solo aparece cuando el usuario activa el formulario
-         ===================================================== */}
+    <PhotoHero config={config} isMobile={isMobile} active={formActivo}>
       <div
+        className="photo-hero__form"
+        data-active={formActivo}
+        hidden={!sections.upload}
         style={{
-          position: 'absolute',
-          inset: 0,
+          background: formActivo ? 'var(--event-panel-active)' : 'var(--event-panel-idle)',
 
-          backgroundColor: formActivo ? 'rgba(20, 24, 12, 0.30)' : 'rgba(20, 24, 12, 0)',
+          backdropFilter: formActivo
+            ? 'var(--event-panel-blur-active)'
+            : 'var(--event-panel-blur-idle)',
 
-          backdropFilter: formActivo ? 'blur(2px)' : 'blur(0px)',
+          WebkitBackdropFilter: formActivo
+            ? 'var(--event-panel-blur-active)'
+            : 'var(--event-panel-blur-idle)',
 
-          WebkitBackdropFilter: formActivo ? 'blur(2px)' : 'blur(0px)',
+          border: 'var(--event-panel-border)',
 
-          transition: 'background-color 0.45s ease, backdrop-filter 0.45s ease',
-
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      />
-
-      {/* =====================================================
-          FORMULARIO
-          PASO 1 -> pequeño y abajo
-          PASO 2 -> card completo y centrado
-         ===================================================== */}
-      <div
-        style={{
-          position: 'absolute',
-
-          left: '50%',
-
-          top: formActivo ? '50%' : isMobile ? '82%' : '84%',
-
-          transform: 'translate(-50%, -50%)',
-
-          width: formActivo ? (isMobile ? '88%' : '390px') : isMobile ? '86%' : '350px',
-
-          maxWidth: isMobile ? '420px' : '390px',
-
-          padding: formActivo
-            ? isMobile
-              ? '22px 18px 20px'
-              : '28px 28px 24px'
-            : isMobile
-              ? '14px 16px'
-              : '15px 18px',
-
-          boxSizing: 'border-box',
-
-          background: formActivo
-            ? 'linear-gradient(145deg, rgba(255,253,247,0.91) 0%, rgba(247,240,221,0.86) 100%)'
-            : 'rgba(255,253,247,0.82)',
-
-          backdropFilter: formActivo ? 'blur(12px)' : 'blur(7px)',
-
-          WebkitBackdropFilter: formActivo ? 'blur(12px)' : 'blur(7px)',
-
-          border: '1px solid rgba(190,148,67,0.65)',
-
-          borderRadius: formActivo ? '20px' : '14px',
+          borderRadius: formActivo
+            ? 'var(--event-panel-radius-active)'
+            : 'var(--event-panel-radius-idle)',
 
           boxShadow: formActivo
-            ? '0 18px 50px rgba(15,18,8,0.38)'
-            : '0 8px 25px rgba(15,18,8,0.24)',
+            ? 'var(--event-panel-shadow-active)'
+            : 'var(--event-panel-shadow-idle)',
 
           textAlign: 'center',
 
-          fontFamily: 'Georgia, serif',
-          color: '#44492f',
+          fontFamily: 'var(--event-font)',
+          color: 'var(--event-text)',
 
           transition:
-            'top 0.45s ease, width 0.45s ease, padding 0.45s ease, background 0.45s ease, border-radius 0.45s ease, box-shadow 0.45s ease',
+            'width 0.45s ease, padding 0.45s ease, background 0.45s ease, border-radius 0.45s ease, box-shadow 0.45s ease',
 
           zIndex: 10,
         }}
@@ -271,7 +222,7 @@ export default function UploadPhotos() {
         {/* =====================================================
             CONTENIDO QUE SOLO APARECE CUANDO SE ACTIVA
            ===================================================== */}
-        {formActivo && (
+        {formActivo && sections.instructions && (
           <>
             <div
               style={{
@@ -280,7 +231,7 @@ export default function UploadPhotos() {
 
                 margin: '0 auto 14px',
 
-                background: 'linear-gradient(90deg, transparent, #b58b3b, transparent)',
+                background: 'var(--event-accent-line)',
               }}
             />
 
@@ -288,7 +239,7 @@ export default function UploadPhotos() {
               style={{
                 margin: '0 0 6px',
 
-                fontFamily: 'Georgia, serif',
+                fontFamily: 'var(--event-font)',
 
                 fontSize: isMobile ? '21px' : '26px',
 
@@ -296,26 +247,26 @@ export default function UploadPhotos() {
 
                 lineHeight: '1.2',
 
-                color: '#8d692b',
+                color: 'var(--event-heading)',
               }}
             >
-              Comparte tus recuerdos
+              {texts.upload.title}
             </h2>
 
             <p
               style={{
                 margin: '0 0 20px',
 
-                fontFamily: 'Georgia, serif',
+                fontFamily: 'var(--event-font)',
 
                 fontSize: isMobile ? '13px' : '14px',
 
                 lineHeight: '1.4',
 
-                color: '#606347',
+                color: 'var(--event-muted)',
               }}
             >
-              Sube aquí tus mejores fotos 📸
+              {texts.upload.subtitle}
             </p>
           </>
         )}
@@ -329,7 +280,13 @@ export default function UploadPhotos() {
               marginBottom: '15px',
             }}
           >
-            <ShowAlert alertMsg={alertMsg} color={alertColor} setShowAlert={setShowAlert} />
+            <ShowAlert
+              durationMs={config.feedback.alertDurationMs}
+              closeLabel={texts.messages.close}
+              alertMsg={alertMsg}
+              color={alertColor}
+              setShowAlert={setShowAlert}
+            />
           </div>
         )}
 
@@ -351,16 +308,16 @@ export default function UploadPhotos() {
 
                 marginBottom: '7px',
 
-                fontFamily: 'Georgia, serif',
+                fontFamily: 'var(--event-font)',
 
                 fontSize: isMobile ? '13px' : '14px',
 
                 lineHeight: '1.4',
 
-                color: '#4c5137',
+                color: 'var(--event-label)',
               }}
             >
-              Tu nombre o apodo
+              {texts.upload.nameLabel}
             </label>
           )}
 
@@ -368,7 +325,9 @@ export default function UploadPhotos() {
             type="text"
             id="nombre"
             name="nombre"
-            placeholder={formActivo ? 'Ej. Ricardo' : 'Ingresa tu nombre o apodo'}
+            placeholder={
+              formActivo ? texts.upload.activeNamePlaceholder : texts.upload.namePlaceholder
+            }
             onFocus={() => setFormActivo(true)}
             onChange={handleNameChange}
             value={nombre}
@@ -379,21 +338,21 @@ export default function UploadPhotos() {
 
               padding: formActivo ? (isMobile ? '12px 14px' : '13px 15px') : '11px 14px',
 
-              backgroundColor: 'rgba(255,255,255,0.90)',
+              backgroundColor: 'var(--event-input-background)',
 
-              border: '1px solid rgba(167,133,66,0.55)',
+              border: 'var(--event-input-border)',
 
               borderRadius: '10px',
 
               outline: 'none',
 
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'var(--event-font)',
 
               fontSize: isMobile ? '16px' : '15px',
 
-              color: '#3f432e',
+              color: 'var(--event-input-text)',
 
-              boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.04)',
+              boxShadow: 'var(--event-input-shadow)',
 
               transition: 'all 0.3s ease',
             }}
@@ -409,7 +368,7 @@ export default function UploadPhotos() {
               margin: '16px 0',
             }}
           >
-            <Spinner>Loading...</Spinner>
+            <Spinner>{texts.upload.loading}</Spinner>
           </div>
         )}
 
@@ -444,16 +403,16 @@ export default function UploadPhotos() {
                   padding: isMobile ? '12px 18px' : '12px 20px',
 
                   background: canUpload
-                    ? 'linear-gradient(135deg, #697047 0%, #4d5432 100%)'
-                    : '#aaa',
+                    ? 'var(--event-button-background)'
+                    : 'var(--event-disabled)',
 
-                  color: '#fff',
+                  color: 'var(--event-button-text)',
 
-                  border: canUpload ? '1px solid #b69149' : '1px solid #aaa',
+                  border: canUpload ? 'var(--event-button-border)' : 'var(--event-disabled-border)',
 
                   borderRadius: '10px',
 
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: 'var(--event-font)',
 
                   fontSize: '14px',
 
@@ -463,20 +422,20 @@ export default function UploadPhotos() {
 
                   cursor: canUpload ? 'pointer' : 'not-allowed',
 
-                  boxShadow: canUpload ? '0 7px 18px rgba(48,54,30,0.22)' : 'none',
+                  boxShadow: canUpload ? 'var(--event-button-shadow)' : 'none',
 
                   transition: 'all 0.3s ease',
                 }}
               >
-                Seleccionar Fotos
+                {texts.upload.select}
               </button>
             )}
 
             {/* INPUT FILE OCULTO */}
             <input
               type="file"
-              accept="image/*"
-              multiple
+              accept={upload.accept}
+              multiple={upload.multiple}
               onChange={handleFileChange}
               ref={inputRef}
               style={{
@@ -488,7 +447,7 @@ export default function UploadPhotos() {
             {/* =================================================
                 PREVIEW
                ================================================= */}
-            {previewFiles.length > 0 && (
+            {sections.photoPreview && previewFiles.length > 0 && (
               <div
                 style={{
                   width: '100%',
@@ -500,6 +459,7 @@ export default function UploadPhotos() {
                 }}
               >
                 <ModalPhotos
+                  config={config}
                   previewFiles={previewFiles}
                   handleRemove={handleRemove}
                   uploading={uploading}
@@ -523,16 +483,19 @@ export default function UploadPhotos() {
 
                   background:
                     uploading || !canUpload
-                      ? '#aaa'
-                      : 'linear-gradient(135deg, #697047 0%, #4d5432 100%)',
+                      ? 'var(--event-disabled)'
+                      : 'var(--event-button-background)',
 
-                  color: '#fff',
+                  color: 'var(--event-button-text)',
 
-                  border: uploading || !canUpload ? '1px solid #aaa' : '1px solid #b69149',
+                  border:
+                    uploading || !canUpload
+                      ? 'var(--event-disabled-border)'
+                      : 'var(--event-button-border)',
 
                   borderRadius: '10px',
 
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: 'var(--event-font)',
 
                   fontSize: '14px',
 
@@ -542,12 +505,12 @@ export default function UploadPhotos() {
 
                   cursor: uploading || !canUpload ? 'not-allowed' : 'pointer',
 
-                  boxShadow: uploading || !canUpload ? 'none' : '0 7px 18px rgba(48,54,30,0.22)',
+                  boxShadow: uploading || !canUpload ? 'none' : 'var(--event-button-shadow)',
 
                   transition: 'all 0.3s ease',
                 }}
               >
-                {uploading ? 'Subiendo...' : 'Subir Fotos'}
+                {uploading ? texts.upload.submitting : texts.upload.submit}
               </button>
             )}
           </div>
@@ -557,7 +520,7 @@ export default function UploadPhotos() {
             DETALLE DORADO INFERIOR
             Solo cuando el formulario está activo
            ===================================================== */}
-        {formActivo && (
+        {formActivo && sections.decoration && (
           <div
             style={{
               display: 'flex',
@@ -577,17 +540,17 @@ export default function UploadPhotos() {
                 width: '30px',
                 height: '1px',
 
-                backgroundColor: '#ad873e',
+                backgroundColor: 'var(--event-decoration-line)',
               }}
             />
 
             <span
               style={{
-                color: '#9a752f',
+                color: 'var(--event-decoration-color)',
                 fontSize: '16px',
               }}
             >
-              ♡
+              {texts.upload.decoration}
             </span>
 
             <div
@@ -595,12 +558,12 @@ export default function UploadPhotos() {
                 width: '30px',
                 height: '1px',
 
-                backgroundColor: '#ad873e',
+                backgroundColor: 'var(--event-decoration-line)',
               }}
             />
           </div>
         )}
       </div>
-    </div>
+    </PhotoHero>
   );
 }

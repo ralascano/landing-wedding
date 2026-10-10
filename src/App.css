@@ -48,7 +48,7 @@
 
 .container {
   position: relative;
-  background: url(./assets/brkr.jpeg);
+  background: var(--event-legacy-background, none);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;

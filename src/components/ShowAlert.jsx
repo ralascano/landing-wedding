@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button } from 'reactstrap';
 
-const ShowAlert = ({ alertMsg, color, setShowAlert }) => {
+const ShowAlert = ({ alertMsg, color, setShowAlert, durationMs, closeLabel }) => {
   const [visible, setVisible] = useState(false);
   //const [alertMsg, setAlertMsg] = useState('');
 
@@ -16,13 +16,13 @@ const ShowAlert = ({ alertMsg, color, setShowAlert }) => {
     setTimeout(() => {
       setVisible(false);
       setShowAlert(false);
-    }, 5000);
+    }, durationMs);
   };
 
   return (
     <div>
       {visible && (
-        <Alert color={color} toggle={() => setVisible(false)}>
+        <Alert closeAriaLabel={closeLabel} color={color} toggle={() => setVisible(false)}>
           {alertMsg}
         </Alert>
       )}
