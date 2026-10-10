@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ref, uploadBytes } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 
 import { formatText } from '../config/format-text';
@@ -7,7 +6,7 @@ import ModalPhotos from './ModalPhotos';
 import PhotoHero from '../templates/PhotoHero';
 import { Spinner } from 'reactstrap';
 import ShowAlert from './ShowAlert';
-//import { storage } from '../firebase';
+import { uploadLegacyPhotos } from '../services/legacy-upload';
 
 function limpiarYTransformarNombre(nombre) {
   if (!nombre) return '';
@@ -27,7 +26,7 @@ function limpiarYTransformarNombre(nombre) {
   return `${camelCase}_${idUnico}`;
 }
 
-export default function UploadPhotos({ config, technicalConfig }) {
+export default function UploadPhotos({ config, technicalConfig, uploadFiles }) {
   const { texts, upload, sections } = config;
   const [previewFiles, setPreviewFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -135,16 +134,8 @@ export default function UploadPhotos({ config, technicalConfig }) {
     setCanUpload(false);
 
     try {
-      //FIREBASE TEMPORALMENTE DESACTIVADO
-
-      /*for (const { file } of previewFiles) {
-        const storageRef = ref(
-          storage,
-          `${technicalConfig.storagePrefix}/${nombreTransformado}/${Date.now()}-${file.name}`,
-        );
-
-        await uploadBytes(storageRef, file);
-      }*/
+      if (uploadFiles) await uploadFiles(previewFiles, nombre);
+      else await uploadLegacyPhotos(previewFiles, nombreTransformado, technicalConfig);
 
       setAlertMsg(formatText(texts.messages.success, { minutes: upload.cooldownMs / 60000 }));
       setAlertColor('primary');
@@ -152,7 +143,7 @@ export default function UploadPhotos({ config, technicalConfig }) {
       setPreviewFiles([]);
     } catch (error) {
       console.error('Error al subir imágenes:', error);
-      setAlertMsg(texts.messages.uploadError);
+      setAlertMsg(error.message || texts.messages.uploadError);
       setAlertColor('danger');
       setShowAlert(true);
     } finally {

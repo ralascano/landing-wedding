@@ -1,8 +1,9 @@
 import './App.css';
 import { useLayoutEffect } from 'react';
 import UploadPhotos from './components/UploadPhotos';
+import { premiumTemplates } from './templates/premium';
 
-function App({ config, technicalConfig }) {
+function App({ config, technicalConfig, uploadFiles }) {
   useLayoutEffect(() => {
     // Root scope also reaches Reactstrap's modal portal under document.body.
     const root = document.documentElement;
@@ -36,9 +37,16 @@ function App({ config, technicalConfig }) {
 
   // A single explicit choice today; no registry or plugin system needed.
   if (config.template !== 'photo-hero') {
-    throw new Error(`Unsupported template: ${config.template}`);
+    const entry = premiumTemplates[config.template];
+    if (!entry || entry.eventId !== config.event.id) {
+      return <p role="alert">La plantilla exclusiva de este evento todavía no está instalada.</p>;
+    }
+    const Template = entry.Component;
+    return <Template config={config} technicalConfig={technicalConfig} uploadFiles={uploadFiles} />;
   }
-  return <UploadPhotos config={config} technicalConfig={technicalConfig} />;
+  return (
+    <UploadPhotos config={config} technicalConfig={technicalConfig} uploadFiles={uploadFiles} />
+  );
 }
 
 export default App;

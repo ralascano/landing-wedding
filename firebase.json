@@ -13,5 +13,40 @@
   },
   "storage": {
     "rules": "storage.rules"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "recuerdosqr",
+      "runtime": "nodejs22",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "test",
+        "integration",
+        "scripts",
+        "*.log",
+        ".env.example"
+      ]
+    }
+  ],
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "storage": {
+      "port": 9199
+    },
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    },
+    "singleProjectMode": true
   }
 }

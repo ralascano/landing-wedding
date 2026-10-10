@@ -1,0 +1,246 @@
+.rq-admin,
+.rq-login,
+.rq-page {
+  color: #24213c;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+.rq-admin {
+  background: #f5f4fa;
+  min-height: 100dvh;
+  text-align: left;
+}
+.rq-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #f5f4fa;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.rq-login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(125deg, #30205b, #24569a);
+  text-align: left;
+}
+.rq-login form {
+  width: min(100%, 440px);
+}
+.rq-card {
+  background: white;
+  border: 1px solid #e0dced;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 18px 0;
+  box-shadow: 0 5px 20px #30205b08;
+}
+.rq-brand {
+  color: #592d94;
+  font-size: 1.5rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+.rq-admin-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: white;
+  border-bottom: 1px solid #e0dced;
+}
+.rq-admin-header small {
+  display: block;
+  color: #666;
+}
+.rq-admin nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #eeebf6;
+}
+.rq-admin nav button {
+  background: transparent;
+  color: #503780;
+}
+.rq-admin nav button.active {
+  background: #503780;
+  color: white;
+}
+.rq-page h1,
+.rq-login h1 {
+  font-size: 2rem;
+}
+.rq-page h2 {
+  font-size: 1.5rem;
+}
+.rq-page h3 {
+  font-size: 1.15rem;
+}
+.rq-page label,
+.rq-login label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-weight: 550;
+  min-width: 0;
+}
+.rq-page input,
+.rq-page select,
+.rq-page textarea,
+.rq-login input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #c8bfd9;
+  border-radius: 8px;
+  color: #24213c;
+  background: white;
+  font: inherit;
+}
+.rq-page textarea {
+  resize: vertical;
+}
+.rq-page input:focus,
+.rq-login input:focus {
+  outline: 2px solid #8464ba;
+  outline-offset: 2px;
+}
+.rq-page button,
+.rq-login button,
+.rq-admin-header button,
+.rq-admin nav button {
+  min-height: 44px;
+  background: #6335a2;
+  color: white;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin: 4px 8px 4px 0;
+  font: inherit;
+  cursor: pointer;
+}
+.rq-page button:disabled,
+.rq-login button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.rq-page .rq-secondary,
+.rq-admin-header .rq-secondary {
+  background: #e9e3f2;
+  color: #43286a;
+}
+.rq-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+}
+.rq-page .rq-check {
+  flex-direction: row;
+  align-items: start;
+  font-weight: 400;
+}
+.rq-check input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.rq-workspace {
+  min-width: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+.rq-workspace fieldset {
+  padding: 16px;
+  border: 1px solid #e0dced;
+  margin: 16px 0;
+}
+.rq-error {
+  color: #82252f;
+  background: #fce8eb;
+  border-radius: 8px;
+  padding: 12px;
+}
+.rq-list article {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+.rq-list span {
+  flex: 1;
+  min-width: 150px;
+}
+.rq-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.rq-stats strong {
+  display: block;
+  font-size: 2.5rem;
+  color: #6335a2;
+}
+.rq-legal-body {
+  white-space: pre-wrap;
+  font-weight: 400;
+}
+.rq-muted {
+  color: #656075;
+  font-size: 0.9rem;
+}
+.rq-page details {
+  margin: 16px 0;
+}
+.rq-page summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.rq-qr {
+  overflow: auto;
+  margin: 16px 0;
+}
+.rq-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+  gap: 12px;
+}
+.rq-gallery img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.rq-privacy-link {
+  display: block;
+  background: #503780;
+  color: white;
+  padding: 14px;
+  text-align: center;
+  text-decoration: underline;
+  font-family: system-ui, sans-serif;
+}
+@media (max-width: 600px) {
+  .rq-page {
+    padding: 16px;
+  }
+  .rq-card {
+    padding: 16px;
+  }
+  .rq-admin nav {
+    padding: 8px 16px;
+  }
+  .rq-admin-header {
+    padding: 16px;
+  }
+}

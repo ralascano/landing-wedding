@@ -4,7 +4,11 @@ export function validateEventConfig(config) {
     throw new Error(`Invalid event config: ${message}`);
   };
   if (config.schemaVersion !== 1) fail('unsupported schemaVersion');
-  if ((config.template ?? 'photo-hero') !== 'photo-hero') fail('unsupported template');
+  if (
+    (config.template ?? 'photo-hero') !== 'photo-hero' &&
+    !/^premium:[a-z0-9-]+$/.test(config.template)
+  )
+    fail('unsupported template');
   const positions = config.templateOptions;
   if (
     !['top-left', 'top-center', 'top-right'].includes(positions?.identityPosition ?? 'top-center')
